@@ -9,13 +9,13 @@ const SCHEDULE_DATETIME_FORMAT = 'YYYY-MM-DDTHH:mm';
 
 const createOffersTemplate = (offers, availableOffers) => {
   let templateContent = '';
-  for (let i = 0; i < offers.length; i++) {
-    const offerId = offers[i];
+  for (const offer of offers) {
+    const offerData = availableOffers.find((value) => value.id === offer);
     templateContent +=
     `<li class="event__offer">
-      <span class="event__offer-title">${availableOffers[offerId].description}</span>
+      <span class="event__offer-title">${offerData.description}</span>
       &plus;&euro;&nbsp;
-      <span class="event__offer-price">${availableOffers[offerId].price}</span>
+      <span class="event__offer-price">${offerData.price}</span>
     </li>`;
   }
   return templateContent ?
@@ -25,16 +25,16 @@ const createOffersTemplate = (offers, availableOffers) => {
     templateContent;
 };
 
-const createItemTemlpate = (event, types, destinations, availableOffers) => {
+const createItemTemlpate = (event, destinations, availableOffers) => {
   const {type, destination, offers, startDate, endDate, price, isFavorite} = event;
-  const typeName = types[type];
-  const title = `${typeName} ${destinations[destination].title}`;
+  const destinationData = destinations.find((value) => value.id === destination);
+  const title = `${type} ${destinationData.title}`;
 
   return `<li class="trip-events__item">
     <div class="event">
       <time class="event__date" datetime=${dayjs(startDate).format(MAIN_DATETIME_FORMAT)}">${dayjs(startDate).format(MAIN_DATE_FORMAT)}</time>
       <div class="event__type">
-        <img class="event__type-icon" width="42" height="42" src="img/icons/${typeName}.png" alt="Event type icon">
+        <img class="event__type-icon" width="42" height="42" src="img/icons/${type}.png" alt="Event type icon">
       </div>
       <h3 class="event__title">${title}</h3>
       <div class="event__schedule">
@@ -49,7 +49,7 @@ const createItemTemlpate = (event, types, destinations, availableOffers) => {
         &euro;&nbsp;<span class="event__price-value">${price}</span>
       </p>
       <h4 class="visually-hidden">Offers:</h4>
-      ${createOffersTemplate(offers, availableOffers.get(typeName))}
+      ${createOffersTemplate(offers, availableOffers.get(type))}
       <button class="event__favorite-btn  ${isFavorite ? 'event__favorite-btn--active' : ''}" type="button">
         <span class="visually-hidden">Add to favorite</span>
         <svg class="event__favorite-icon" width="28" height="28" viewBox="0 0 28 28">
@@ -64,9 +64,8 @@ const createItemTemlpate = (event, types, destinations, availableOffers) => {
 };
 
 export default class EventItemView {
-  constructor({event, types, destinations, availableOffers}) {
+  constructor({event, destinations, availableOffers}) {
     this.event = event;
-    this.types = types;
     this.destinations = destinations;
     this.availableOffers = availableOffers;
   }
@@ -74,7 +73,6 @@ export default class EventItemView {
   getTemplate() {
     return createItemTemlpate(
       this.event,
-      this.types,
       this.destinations,
       this.availableOffers);
   }

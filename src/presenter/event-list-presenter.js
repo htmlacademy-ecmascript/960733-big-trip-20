@@ -32,7 +32,6 @@ export default class EventListPresenter {
     for (let i = 1; i < this.events.length; i++) {
       const itemView = new EventItemView({
         event: this.events[i],
-        types: this.types,
         destinations: this.destinations,
         availableOffers: this.availableOffers
       });

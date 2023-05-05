@@ -19,7 +19,7 @@ const createEventTypesTemplate = (types, selectedType) => {
 const createDestinationsTemplate = (destinations) => {
   let templateContent = '';
   for (const destination of destinations) {
-    templateContent += `<option value="${destination}}"></option>`;
+    templateContent += `<option value="${destination.title}"></option>`;
   }
   return templateContent;
 };
@@ -33,12 +33,11 @@ const createOffersTemplate = (availableOffers, selectedOffers) => {
     <h3 class="event__section-title  event__section-title--offers">Offers</h3>
     <div class="event__available-offers">`;
 
-  for (let i = 0; i < availableOffers.length; i++) {
-    const offer = availableOffers[i];
-    const checked = selectedOffers.includes(i) ? 'checked' : '';
+  for (const offer of availableOffers) {
+    const checked = selectedOffers.includes(offer.id) ? 'checked' : '';
     templateContent += `<div class="event__offer-selector">
-      <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offer.id}-1" type="checkbox" name="event-offer-${offer.id}" ${checked}>
-      <label class="event__offer-label" for="event-offer-${offer.id}-1">
+      <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offer.name}-1" type="checkbox" name="event-offer-${offer.name}" ${checked}>
+      <label class="event__offer-label" for="event-offer-${offer.name}-1">
         <span class="event__offer-title">${offer.description}</span>
         &plus;&euro;&nbsp;
         <span class="event__offer-price">${offer.price}</span>
@@ -54,11 +53,10 @@ const createPhotoTemplate = (photos) => {
   if (photos.length === 0) {
     return templateContent;
   }
-  templateContent += `<div class="event__photos-container">
-    <div class="event__photos-tape">`;
+  templateContent += '<div><div class="event__photos-tape">';
 
   for (const photo of photos) {
-    templateContent += `<img class="event__photo" src="${photo}" alt="Event photo"></img>`;
+    templateContent += `<img class="event__photo" src="${photo.src}" alt="${photo.description}"></img>`;
   }
   templateContent += '</div></div>';
   return templateContent;
@@ -66,7 +64,7 @@ const createPhotoTemplate = (photos) => {
 
 const createEventEditTemlpate = (event, types, destinations, availableOffers) => {
   const {type, destination, offers, startDate, endDate, price} = event;
-  const typeName = types[type];
+  const destinationData = destinations.find((value) => value.id === destination);
 
   return `<li class="trip-events__item">
     <form class="event event--edit" action="#" method="post">
@@ -74,23 +72,23 @@ const createEventEditTemlpate = (event, types, destinations, availableOffers) =>
         <div class="event__type-wrapper">
           <label class="event__type  event__type-btn" for="event-type-toggle-1">
             <span class="visually-hidden">Choose event type</span>
-            <img class="event__type-icon" width="17" height="17" src="img/icons/${typeName}.png" alt="Event type icon">
+            <img class="event__type-icon" width="17" height="17" src="img/icons/${type}.png" alt="Event type icon">
           </label>
           <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">
 
           <div class="event__type-list">
             <fieldset class="event__type-group">
               <legend class="visually-hidden">Event type</legend>
-              ${createEventTypesTemplate(types, typeName)}
+              ${createEventTypesTemplate(types, type)}
             </fieldset>
           </div>
         </div>
 
         <div class="event__field-group  event__field-group--destination">
           <label class="event__label  event__type-output" for="event-destination-1">
-            ${typeName}
+            ${type}
           </label>
-          <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destinations[destination].title}" list="destination-list-1">
+          <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destinationData.title}" list="destination-list-1">
           <datalist id="destination-list-1">
             ${createDestinationsTemplate(destinations)}
           </datalist>
@@ -119,7 +117,7 @@ const createEventEditTemlpate = (event, types, destinations, availableOffers) =>
         </button>
       </header>
       <section class="event__details">
-        ${createOffersTemplate(availableOffers.get(typeName), offers)}
+        ${createOffersTemplate(availableOffers.get(type), offers)}
         <section class="event__section  event__section--destination">
           <h3 class="event__section-title  event__section-title--destination">Destination</h3>
           <p class="event__destination-description">${destinations[destination].description}</p>
