@@ -26,7 +26,7 @@ const createDestinationsTemplate = (destinations) => {
 
 const createOffersTemplate = (availableOffers, selectedOffers) => {
   let templateContent = '';
-  if (selectedOffers.length === 0) {
+  if (availableOffers.length === 0) {
     return templateContent;
   }
   templateContent += `<section class="event__section  event__section--offers">

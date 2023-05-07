@@ -1,57 +1,16 @@
 import {getRandomArrayElement, getRandomInteger} from '../utils.js';
+import {EVENT_TYPES} from '../const.js';
+import dayjs from 'dayjs';
 
 const MIN_PHOTO_INDEX = 1;
 const MAX_PHOTO_INDEX = 200;
-
-const mockEvents = [
-  {
-    type: 'taxi',
-    destination: 0,
-    offers: [1, 2],
-    startDate: new Date('2023-01-01T13:25:00'),
-    endDate: new Date('2023-01-01T20:10:00'),
-    price: 100,
-    isFavorite: true
-  },
-  {
-    type: 'drive',
-    destination: 1,
-    offers: [0],
-    startDate: new Date('2023-03-02T15:00:00'),
-    endDate: new Date('2023-03-02T16:15:00'),
-    price: 25,
-    isFavorite: true
-  },
-  {
-    type: 'flight',
-    destination: 2,
-    offers: [2, 3],
-    startDate: new Date('2023-03-02T15:20:00'),
-    endDate: new Date('2023-03-02T17:15:00'),
-    price: 750,
-    isFavorite: false
-  },
-  {
-    type: 'restaurant',
-    destination: 3,
-    offers: [0, 1],
-    startDate: new Date('2023-04-06T10:00:00'),
-    endDate: new Date('2023-04-06T12:15:00'),
-    price: 250,
-    isFavorite: true
-  },
-  {
-    type: 'restaurant',
-    destination: 2,
-    offers: [1],
-    startDate: new Date('2023-03-06T16:00:00'),
-    endDate: new Date('2023-03-06T16:55:00'),
-    price: 250,
-    isFavorite: false
-  }
-];
-
-const getRandomEvent = () => getRandomArrayElement(mockEvents);
+const MOCK_DATA_QUANTITY = 4;
+const MIN_MOCK_ID = 0;
+const MIN_PRICE = 10;
+const MAX_PRICE = 800;
+const MIDDLE_EVENT_PRICE = 400;
+const MIN_EVENT_OFFERS = 0;
+const MAX_EVENT_OFFERS = 3;
 
 const getDestinationData = (id, title, description) => ({
   id: id,
@@ -98,9 +57,29 @@ const getOffers = () => {
     getOfferData(1, 'yandex', 'Order Yandex', 25),
     getOfferData(2, 'car', 'Rent a car', 200)
   ]);
+  map.set('bus', [
+    getOfferData(0, 'night', 'Night ride', 20),
+    getOfferData(1, 'blanket', 'Extra blanket', 30),
+    getOfferData(2, 'drinks', 'Add drinks', 100)
+  ]);
+  map.set('train', [
+    getOfferData(0, 'coupe', 'Сoupe train', 200),
+    getOfferData(1, 'meal', 'Add meal', 15),
+    getOfferData(2, 'luggage', 'Add luggage', 50)
+  ]);
+  map.set('ship', [
+    getOfferData(0, 'ferryboat', 'Ferryboat', 900),
+    getOfferData(1, 'transportation', 'Сar transportation', 150),
+    getOfferData(2, 'extra', 'Extra luggage', 50)
+  ]);
   map.set('drive', [
     getOfferData(0, 'own', 'Own car', 10),
     getOfferData(1, 'truck', 'Rent a truck', 200)
+  ]);
+  map.set('check-in', [
+    getOfferData(0, 'ferryboat', 'Room reserve', 120),
+    getOfferData(1, 'bed', 'Extra bed', 150),
+    getOfferData(2, 'lunch', 'Lunch', 50)
   ]);
   map.set('flight', [
     getOfferData(0, 'luggage', 'Add luggage', 50),
@@ -109,6 +88,11 @@ const getOffers = () => {
     getOfferData(3, 'seats', 'Choose seats', 5),
     getOfferData(4, 'train', 'Travel by train', 40)
   ]);
+  map.set('sightseeing', [
+    getOfferData(0, 'delivery', 'Bus delivery', 120),
+    getOfferData(1, 'photograph', 'Photograph', 150),
+    getOfferData(2, 'video', 'Copter video', 50)
+  ]);
   map.set('restaurant', [
     getOfferData(0, 'chef', 'Meeting the chef', 30),
     getOfferData(1, 'escort', 'Escort', 500),
@@ -116,6 +100,32 @@ const getOffers = () => {
   ]);
   return map;
 };
+
+const getRandomOfferId = () => getRandomInteger(MIN_EVENT_OFFERS, MAX_EVENT_OFFERS - 1);
+
+const getMockEvent = () => {
+
+  const type = getRandomArrayElement(EVENT_TYPES);
+  const offers = Array.from(new Set(Array.from({length: getRandomOfferId()}, getRandomOfferId)));
+  const startDate = new Date('2022-04-01T00:00:00');
+  const endDate = new Date('2023-04-31T23:59:59');
+  const randomDate = new Date(startDate.getTime() + Math.random() * (dayjs(endDate).diff(startDate)));
+  const maxMinutesToAdd = 500;
+
+  return{
+    type: type,
+    destination: getRandomInteger(MIN_MOCK_ID, getDestinations().length - 1),
+    offers: offers,
+    startDate: randomDate,
+    endDate: dayjs(randomDate).add(getRandomInteger(1, maxMinutesToAdd), 'minute'),
+    price: getRandomInteger(MIN_PRICE, MAX_PRICE),
+    isFavorite: getRandomInteger(MIN_PRICE, MAX_PRICE) > MIDDLE_EVENT_PRICE
+  };
+};
+
+const mockEvents = () => Array.from({length: MOCK_DATA_QUANTITY}, getMockEvent);
+
+const getRandomEvent = () => getRandomArrayElement(mockEvents());
 
 export {getRandomEvent};
 export {getDestinations};
