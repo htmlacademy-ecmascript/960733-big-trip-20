@@ -1,4 +1,4 @@
-import {createElement} from '../render.js';
+import AbstractView from '../framework/view/abstract-view.js';
 import {getTimeFromMins} from '../utils.js';
 import dayjs from 'dayjs';
 
@@ -63,28 +63,22 @@ const createItemTemlpate = (event, destinations, availableOffers) => {
   </li>`;
 };
 
-export default class EventItemView {
+export default class EventItemView extends AbstractView {
+  #event = null;
+  #destinations = null;
+  #availableOffers = null;
+
   constructor({event, destinations, availableOffers}) {
-    this.event = event;
-    this.destinations = destinations;
-    this.availableOffers = availableOffers;
+    super();
+    this.#event = event;
+    this.#destinations = destinations;
+    this.#availableOffers = availableOffers;
   }
 
-  getTemplate() {
+  get template() {
     return createItemTemlpate(
-      this.event,
-      this.destinations,
-      this.availableOffers);
-  }
-
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
-    }
-    return this.element;
-  }
-
-  removeElement() {
-    this.element = null;
+      this.#event,
+      this.#destinations,
+      this.#availableOffers);
   }
 }
