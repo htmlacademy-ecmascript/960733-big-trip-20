@@ -1,4 +1,4 @@
-import {createElement} from '../render.js';
+import AbstractView from '../framework/view/abstract-view.js';
 
 const createEventInfoTemlpate = () =>
   `<section class="trip-main__trip-info  trip-info">
@@ -13,19 +13,8 @@ const createEventInfoTemlpate = () =>
     </p>
   </section>`;
 
-export default class EventInfoView {
-  getTemplate() {
+export default class EventInfoView extends AbstractView {
+  get template() {
     return createEventInfoTemlpate();
-  }
-
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
-    }
-    return this.element;
-  }
-
-  removeElement() {
-    this.element = null;
   }
 }
