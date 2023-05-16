@@ -3,6 +3,7 @@ import EventListView from '../view/events-list-view.js';
 import EventItemView from '../view/event-item-view.js';
 import EventEditView from '../view/event-edit-view.js';
 import {render, replace} from '../framework/render.js';
+import NoEventView from '../view/no-event-view.js';
 
 export default class EventListPresenter {
   #eventListView = new EventListView();
@@ -25,6 +26,10 @@ export default class EventListPresenter {
     this.#destinations = [...this.#eventsModel.destinations];
     this.#availableOffers = this.#eventsModel.offers;
 
+    if (!this.#events.length) {
+      render(new NoEventView(), this.#container);
+      return;
+    }
     render(new SortView(), this.#container);
     render(this.#eventListView, this.#container);
 
