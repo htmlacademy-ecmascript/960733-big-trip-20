@@ -8,15 +8,18 @@ export default class EventPresenter {
   #types = null;
   #destinations = null;
   #availableOffers = null;
+  #editMode = false;
 
   #itemEdit = null;
   #itemView = null;
 
   #handleEventChange = null;
+  #handleModeChange = null;
 
-  constructor({container, onEventChange}) {
+  constructor({container, onEventChange, onModeChange}) {
     this.#container = container;
     this.#handleEventChange = onEventChange;
+    this.#handleModeChange = onModeChange;
   }
 
   init({event, eventsModel}) {
@@ -42,7 +45,7 @@ export default class EventPresenter {
       types: this.#types,
       destinations: this.#destinations,
       availableOffers: this.#availableOffers,
-      onEditClick: this.itemEditClickHandler,
+      onEditClick: this.#itemEditClickHandler,
       onFavoriteClick: this.#handleFavoriteClick,
     });
 
@@ -51,12 +54,10 @@ export default class EventPresenter {
       return;
     }
 
-    if (this.#container.contains(prevItemView.element)) {
-      replace(this.#itemView, prevItemView);
-    }
-
-    if (this.#container.contains(prevItemEdit.element)) {
+    if (this.#editMode) {
       replace(this.#itemEdit, prevItemEdit);
+    } else {
+      replace(this.#itemView, prevItemView);
     }
 
     remove(prevItemView);
@@ -68,12 +69,21 @@ export default class EventPresenter {
     remove(this.#itemEdit);
   }
 
+  resetView() {
+    if (this.#editMode) {
+      this.#replaceItemEditToView();
+    }
+  }
+
   #replaceItemViewToEdit () {
     replace(this.#itemEdit, this.#itemView);
+    this.#handleModeChange();
+    this.#editMode = true;
   }
 
   #replaceItemEditToView () {
     replace(this.#itemView, this.#itemEdit);
+    this.#editMode = false;
   }
 
   #escKeyDownHandler = (evt) => {
@@ -84,7 +94,7 @@ export default class EventPresenter {
     }
   };
 
-  itemEditClickHandler = () => {
+  #itemEditClickHandler = () => {
     this.#replaceItemViewToEdit();
     document.addEventListener('keydown', this.#escKeyDownHandler);
   };
@@ -104,5 +114,4 @@ export default class EventPresenter {
     this.#event.isFavorite = !this.#event.isFavorite;
     this.#handleEventChange(this.#event);
   };
-
 }
