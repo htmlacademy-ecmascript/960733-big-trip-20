@@ -1,19 +1,18 @@
 import SortView from '../view/sort-view.js';
 import EventListView from '../view/events-list-view.js';
-import EventItemView from '../view/event-item-view.js';
-import EventEditView from '../view/event-edit-view.js';
-import {render, replace} from '../framework/render.js';
+import {render} from '../framework/render.js';
 import NoEventView from '../view/no-event-view.js';
+import EventPresenter from '../presenter/event-presenter.js';
+import {updateItem} from '../utils/common.js';
 
 export default class EventListPresenter {
   #eventListView = new EventListView();
   #container = null;
   #eventsModel = null;
-
+  #sortView = new SortView();
+  #noEventView = new NoEventView();
   #events = null;
-  #types = null;
-  #destinations = null;
-  #availableOffers = null;
+  #eventPresenters = new Map();
 
   constructor({container, eventsModel}) {
     this.#container = container;
@@ -22,71 +21,56 @@ export default class EventListPresenter {
 
   init() {
     this.#events = [...this.#eventsModel.events];
-    this.#types = [...this.#eventsModel.types];
-    this.#destinations = [...this.#eventsModel.destinations];
-    this.#availableOffers = this.#eventsModel.offers;
 
     if (!this.#events.length) {
-      render(new NoEventView(), this.#container);
+      this.#renderNoEvent();
       return;
     }
-    render(new SortView(), this.#container);
-    render(this.#eventListView, this.#container);
+    this.#renderSort();
+    this.#renderEvents();
+  }
 
-    for (let i = 0; i < this.#events.length; i++) {
-      this.#renderEvent(this.#events[i]);
-    }
+  #handleEventChange = (updatedEvent) => {
+
+    this.#events = updateItem(this.#events, updatedEvent);
+    this.#eventPresenters.get(updatedEvent.id).init({
+      event: updatedEvent,
+      eventsModel: this.#eventsModel
+    });
+  };
+
+  #handleModeChange = () => {
+    this.#eventPresenters.forEach((presenter) => presenter.resetView());
+  };
+
+  #renderNoEvent() {
+    render(this.#noEventView, this.#container);
+  }
+
+  #renderSort() {
+    render(this.#sortView, this.#container);
+  }
+
+  #renderEvents() {
+    render(this.#eventListView, this.#container);
+    this.#events.forEach((event) => this.#renderEvent(event));
   }
 
   #renderEvent(event) {
-    const itemEdit = new EventEditView({
-      event,
-      types: this.#types,
-      destinations: this.#destinations,
-      availableOffers: this.#availableOffers,
-      onSubmitClick: itemSubmitClickHandler,
-      onCloseClick: itemCloseClickHandler
+    const eventPresenter = new EventPresenter({
+      container: this.#eventListView.element,
+      onEventChange: this.#handleEventChange,
+      onModeChange: this.#handleModeChange
     });
-
-    const itemView = new EventItemView({
+    eventPresenter.init({
       event,
-      types: this.#types,
-      destinations: this.#destinations,
-      availableOffers: this.#availableOffers,
-      onEditClick: itemEditClickHandler
+      eventsModel: this.#eventsModel
     });
+    this.#eventPresenters.set(event.id, eventPresenter);
+  }
 
-    const replaceItemViewToEdit = () => {
-      replace(itemEdit, itemView);
-    };
-
-    const replaceItemEditToView = () => {
-      replace(itemView, itemEdit);
-    };
-
-    const escKeyDownHandler = (evt) => {
-      if (evt.key === 'Escape') {
-        evt.preventDefault();
-        replaceItemEditToView();
-        document.removeEventListener('keydown', escKeyDownHandler);
-      }
-    };
-
-    function itemEditClickHandler() {
-      replaceItemViewToEdit();
-      document.addEventListener('keydown', escKeyDownHandler);
-    }
-
-    function itemSubmitClickHandler() {
-      replaceItemEditToView();
-      document.addEventListener('keydown', escKeyDownHandler);
-    }
-
-    function itemCloseClickHandler() {
-      replaceItemEditToView();
-      document.addEventListener('keydown', escKeyDownHandler);
-    }
-
-    render(itemView, this.#eventListView.element);
+  #clearEventList() {
+    this.#eventPresenters.forEach((presenter) => presenter.destroy());
+    this.#eventPresenters.clear();
   }
 }
