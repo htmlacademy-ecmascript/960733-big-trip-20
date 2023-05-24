@@ -109,9 +109,14 @@ const getMockEvent = () => {
 
   const type = getRandomArrayElement(EVENT_TYPES);
   const offers = Array.from(new Set(Array.from({length: getRandomOfferId()}, getRandomOfferId)));
-  const startDate = new Date('2022-04-01T00:00:00');
-  const endDate = new Date('2024-04-31T23:59:59');
-  const randomDate = new Date(startDate.getTime() + Math.random() * (dayjs(endDate).diff(startDate)));
+  const randomDate = new Date(
+    getRandomInteger(2021, 2024),
+    getRandomInteger(1, 12),
+    getRandomInteger(1, 28),
+    getRandomInteger(0, 23),
+    getRandomInteger(0, 59),
+    0
+  );
   const maxMinutesToAdd = 500;
 
   return{
