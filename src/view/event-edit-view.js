@@ -1,4 +1,4 @@
-import AbstractView from '../framework/view/abstract-view.js';
+import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import dayjs from 'dayjs';
 
 const DATE_FORMAT = 'DD/MM/YY HH:mm';
@@ -128,8 +128,7 @@ const createEventEditTemlpate = (event, types, destinations, availableOffers) =>
   </li>`;
 };
 
-export default class EventEditView extends AbstractView {
-  #event = null;
+export default class EventEditView extends AbstractStatefulView {
   #types = null;
   #destinations = null;
   #availableOffers = null;
@@ -138,31 +137,61 @@ export default class EventEditView extends AbstractView {
 
   constructor({event, types, destinations, availableOffers, onSubmitClick, onCloseClick}) {
     super();
-    this.#event = event;
+    this._setState(EventEditView.parseEventToState(event));
     this.#types = types;
     this.#destinations = destinations;
     this.#availableOffers = availableOffers;
     this.#onSubmitClick = onSubmitClick;
     this.#onCloseClick = onCloseClick;
-    this.element.querySelector('.event__save-btn').addEventListener('click', this.#submitClickHandler);
-    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#closeClickHandler);
+
+    this._restoreHandlers();
   }
 
   get template() {
     return createEventEditTemlpate(
-      this.#event,
+      this._state,
       this.#types,
       this.#destinations,
       this.#availableOffers);
   }
 
+  _restoreHandlers() {
+    this.element.querySelector('.event__save-btn').addEventListener('click', this.#submitClickHandler);
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#closeClickHandler);
+    this.element.querySelectorAll('.event__type-label').forEach((value) => value.addEventListener('click', this.#typeChangeHandler));
+    //this.element.querySelector('.event__input--destination').addEventListener('click', this.#destinationChangeHandler);
+  }
+
+  #typeChangeHandler = (evt) => {
+    evt.preventDefault();
+    this.updateElement({
+      type: this._state.type,
+    });
+  };
+
+  #destinationChangeHandler = (evt) => {
+    //evt.preventDefault();
+    this.updateElement({
+      destination: this._state.destination,
+    });
+  };
+
   #submitClickHandler = (evt) => {
     evt.preventDefault();
-    this.#onSubmitClick(this.#event);
+    this.#onSubmitClick(EventEditView.parseStateToEvent(this._state));
   };
 
   #closeClickHandler = (evt) => {
     evt.preventDefault();
     this.#onCloseClick();
   };
+
+  static parseEventToState(event) {
+    return {...event};
+  }
+
+  static parseStateToEvent(state) {
+    return {...state};
+  }
+
 }
