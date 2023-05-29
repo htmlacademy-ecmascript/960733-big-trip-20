@@ -125,7 +125,7 @@ const getMockEvent = () => {
     destination: getRandomInteger(MIN_MOCK_ID, getDestinations().length - 1),
     offers: offers,
     startDate: randomDate,
-    endDate: dayjs(randomDate).add(getRandomInteger(1, maxMinutesToAdd), 'minute'),
+    endDate: dayjs(randomDate).add(getRandomInteger(1, maxMinutesToAdd), 'minute').$d,
     price: getRandomInteger(MIN_PRICE, MAX_PRICE),
     isFavorite: getRandomInteger(MIN_PRICE, MAX_PRICE) > MIDDLE_EVENT_PRICE
   };
