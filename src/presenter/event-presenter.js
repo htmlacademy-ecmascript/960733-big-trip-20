@@ -1,6 +1,7 @@
 import EventItemView from '../view/event-item-view.js';
 import EventEditView from '../view/event-edit-view.js';
-import {render, replace, remove} from '../framework/render.js';
+import {render, replace, remove, RenderPosition} from '../framework/render.js';
+import {UserAction, UpdateType} from '../const.js';
 
 export default class EventPresenter {
   #container = null;
@@ -9,24 +10,28 @@ export default class EventPresenter {
   #destinations = null;
   #availableOffers = null;
   #editMode = false;
+  #newEvent = false;
 
   #itemEdit = null;
   #itemView = null;
 
   #handleEventChange = null;
   #handleModeChange = null;
+  #handleNewEventDestroy = null;
 
-  constructor({container, onEventChange, onModeChange}) {
+  constructor({container, onEventChange, onModeChange, onNewEventDestroy}) {
     this.#container = container;
     this.#handleEventChange = onEventChange;
     this.#handleModeChange = onModeChange;
+    this.#handleNewEventDestroy = onNewEventDestroy;
   }
 
-  init({event, eventsModel}) {
+  init({event, eventsModel, newEvent = false}) {
     this.#event = event;
     this.#types = [...eventsModel.types];
     this.#destinations = [...eventsModel.destinations];
     this.#availableOffers = eventsModel.offers;
+    this.#newEvent = newEvent;
 
     const prevItemView = this.#itemView;
     const prevItemEdit = this.#itemEdit;
@@ -36,8 +41,10 @@ export default class EventPresenter {
       types: this.#types,
       destinations: this.#destinations,
       availableOffers: this.#availableOffers,
+      newEvent: this.#newEvent,
       onSubmitClick: this.#itemSubmitClickHandler,
-      onCloseClick: this.#itemCloseClickHandler
+      onCloseClick: this.#itemCloseClickHandler,
+      onDeleteClick:this.#handleDeleteClick
     });
 
     this.#itemView = new EventItemView({
@@ -49,11 +56,13 @@ export default class EventPresenter {
       onFavoriteClick: this.#handleFavoriteClick,
     });
 
+    if (this.#newEvent) {
+      render(this.#itemEdit, this.#container, RenderPosition.AFTERBEGIN);
+    }
     if (prevItemView === null || prevItemEdit === null) {
       render(this.#itemView, this.#container);
       return;
     }
-
     if (this.#editMode) {
       replace(this.#itemEdit, prevItemEdit);
     } else {
@@ -72,6 +81,10 @@ export default class EventPresenter {
   resetView() {
     if (this.#editMode) {
       this.#replaceItemEditToView();
+    }
+    if (this.#newEvent) {
+      this.#handleNewEventDestroy();
+      this.destroy();
     }
   }
 
@@ -99,10 +112,23 @@ export default class EventPresenter {
     document.addEventListener('keydown', this.#escKeyDownHandler);
   };
 
-  #itemSubmitClickHandler = (event) => {
-    this.#handleEventChange(event);
+  #itemSubmitClickHandler = (evt) => {
+    if (this.#newEvent) {
+      this.#handleEventChange(
+        UserAction.ADD_EVENT,
+        UpdateType.MAJOR,
+        evt);
+      this.#handleNewEventDestroy();
+      this.destroy();
+      return;
+    } else {
+      this.#handleEventChange(
+        UserAction.UPDATE_EVENT,
+        UpdateType.MAJOR,
+        evt);
+    }
     this.#replaceItemEditToView();
-    document.addEventListener('keydown', this.#escKeyDownHandler);
+    document.removeEventListener('keydown', this.#escKeyDownHandler);
   };
 
   #itemCloseClickHandler = () => {
@@ -111,7 +137,24 @@ export default class EventPresenter {
   };
 
   #handleFavoriteClick = () => {
-    this.#event.isFavorite = !this.#event.isFavorite;
-    this.#handleEventChange(this.#event);
+    this.#handleEventChange(
+      UserAction.UPDATE_EVENT,
+      UpdateType.MINOR,
+      {...this.#event, isFavorite: !this.#event.isFavorite},
+    );
   };
+
+  #handleDeleteClick = () => {
+    if (this.#newEvent) {
+      this.#handleNewEventDestroy();
+    } else {
+      this.#handleEventChange(
+        UserAction.DELETE_EVENT,
+        UpdateType.MAJOR,
+        this.#event);
+      return;
+    }
+    this.destroy();
+  };
+
 }
