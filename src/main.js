@@ -2,6 +2,9 @@ import EventListPresenter from './presenter/event-list-presenter.js';
 import EventInfoPresenter from './presenter/event-info-presenter.js';
 import FilterPresenter from './presenter/filter-presenter.js';
 import EventsModel from './model/event-model.js';
+import FilterModel from './model/filter-model.js';
+import NewEventButtonView from './view/new-event-button-view.js';
+import {render} from './framework/render.js';
 
 const eventListElement = document.querySelector('.trip-events');
 const eventInfoElement = document.querySelector('.trip-main');
@@ -12,17 +15,35 @@ const eventInfoPresenter = new EventInfoPresenter(
 );
 
 const eventsModel = new EventsModel();
+const filterModel = new FilterModel();
 
 const filterPresenter = new FilterPresenter({
   container: filterElement,
+  filterModel,
   eventsModel
 });
 
 const eventListPresenter = new EventListPresenter({
   container: eventListElement,
-  eventsModel
+  filterModel,
+  eventsModel,
+  onNewEventDestroy: handleNewEventFormClose
 });
 
+const newEventButtonComponent = new NewEventButtonView({
+  onClick: handleNewEventButtonClick
+});
+
+function handleNewEventFormClose() {
+  newEventButtonComponent.element.disabled = false;
+}
+
+function handleNewEventButtonClick() {
+  eventListPresenter.createEvent();
+  newEventButtonComponent.element.disabled = true;
+}
+
+render(newEventButtonComponent, eventInfoElement);
 eventInfoPresenter.init();
 filterPresenter.init();
 eventListPresenter.init();
