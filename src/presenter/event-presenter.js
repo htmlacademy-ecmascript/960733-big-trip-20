@@ -11,6 +11,7 @@ export default class EventPresenter {
   #availableOffers = null;
   #editMode = false;
   #newEvent = false;
+  #eventsModel = false;
 
   #itemEdit = null;
   #itemView = null;
@@ -28,6 +29,7 @@ export default class EventPresenter {
 
   init({event, eventsModel, newEvent = false}) {
     this.#event = event;
+    this.#eventsModel = eventsModel;
     this.#types = [...eventsModel.types];
     this.#destinations = [...eventsModel.destinations];
     this.#availableOffers = eventsModel.offers;
@@ -36,16 +38,7 @@ export default class EventPresenter {
     const prevItemView = this.#itemView;
     const prevItemEdit = this.#itemEdit;
 
-    this.#itemEdit = new EventEditView({
-      event: this.#event,
-      types: this.#types,
-      destinations: this.#destinations,
-      availableOffers: this.#availableOffers,
-      newEvent: this.#newEvent,
-      onSubmitClick: this.#itemSubmitClickHandler,
-      onCloseClick: this.#itemCloseClickHandler,
-      onDeleteClick:this.#handleDeleteClick
-    });
+    this.#itemEdit = this.#newEventEditView();
 
     this.#itemView = new EventItemView({
       event: this.#event,
@@ -99,6 +92,19 @@ export default class EventPresenter {
     this.#editMode = false;
   }
 
+  #newEventEditView () {
+    return new EventEditView({
+      event: this.#event,
+      types: this.#types,
+      destinations: this.#destinations,
+      availableOffers: this.#availableOffers,
+      newEvent: this.#newEvent,
+      onSubmitClick: this.#itemSubmitClickHandler,
+      onCloseClick: this.#itemCloseClickHandler,
+      onDeleteClick:this.#handleDeleteClick
+    });
+  }
+
   #escKeyDownHandler = (evt) => {
     if (evt.key === 'Escape') {
       evt.preventDefault();
@@ -133,7 +139,9 @@ export default class EventPresenter {
 
   #itemCloseClickHandler = () => {
     this.#replaceItemEditToView();
-    document.addEventListener('keydown', this.#escKeyDownHandler);
+    remove(this.#itemEdit);
+    this.#itemEdit = this.#newEventEditView();
+    document.removeEventListener('keydown', this.#escKeyDownHandler);
   };
 
   #handleFavoriteClick = () => {

@@ -56,9 +56,6 @@ export default class EventListPresenter {
   }
 
   get events() {
-    if (this.#filterType !== this.#filterModel.filter) {
-      this.#currentSortType = SortType.DAY;
-    }
     this.#filterType = this.#filterModel.filter;
     const events = this.#eventsModel.events;
     const filteredEvents = filter[this.#filterType](events);
@@ -89,6 +86,9 @@ export default class EventListPresenter {
   };
 
   #handleModelEvent = (updateType, data) => {
+    if (this.#filterType !== this.#filterModel.filter) {
+      this.#currentSortType = SortType.DAY;
+    }
     switch (updateType) {
       case UpdateType.MINOR:
         this.#eventPresenters.get(data.id).init({
@@ -119,6 +119,7 @@ export default class EventListPresenter {
 
   #renderSort() {
     this.#sortView = new SortView({
+      currentSortType: this.#currentSortType,
       onSortTypeChange: this.#handleSortTypeChange
     });
     render(this.#sortView, this.#container);
