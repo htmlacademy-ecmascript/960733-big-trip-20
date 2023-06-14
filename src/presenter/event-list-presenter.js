@@ -7,6 +7,7 @@ import {sortByDate, sortByTime, sortByPrice} from '../utils/sort.js';
 import {SortType} from '../const.js';
 import {UserAction, UpdateType, FilterType, EmptyEvent} from '../const.js';
 import {filter} from '../utils/filter.js';
+import LoadingView from '../view/loading-view.js';
 
 export default class EventListPresenter {
   #eventListView = new EventListView();
@@ -19,6 +20,8 @@ export default class EventListPresenter {
   #newEventPresenter = null;
   #currentSortType = SortType.DAY;
   #filterType = FilterType.EVERYTHING;
+  #loadingComponent = new LoadingView();
+  #isLoading = true;
 
   constructor({container, filterModel, eventsModel, onNewEventDestroy}) {
     this.#container = container;
@@ -38,11 +41,15 @@ export default class EventListPresenter {
   }
 
   init() {
+    this.#renderSort();
+    if (this.#isLoading) {
+      this.#renderLoading();
+      return;
+    }
     if (!this.#eventsModel.events.length) {
       this.#renderNoEvent();
       return;
     }
-    this.#renderSort();
     this.#renderEvents();
   }
 
@@ -102,6 +109,11 @@ export default class EventListPresenter {
         this.#clearEventList();
         this.#renderEvents();
         break;
+      case UpdateType.INIT:
+        this.#isLoading = false;
+        remove(this.#loadingComponent);
+        this.#renderEvents();
+        break;
     }
   };
 
@@ -125,6 +137,10 @@ export default class EventListPresenter {
     render(this.#sortView, this.#container);
   }
 
+  #renderLoading() {
+    render(this.#loadingComponent, this.#container);
+  }
+
   #handleSortTypeChange = (sortType) => {
     if (this.#currentSortType === sortType) {
       return;
@@ -135,6 +151,10 @@ export default class EventListPresenter {
   };
 
   #renderEvents() {
+    if (this.#isLoading) {
+      this.#renderLoading();
+      return;
+    }
     if (!this.events.length) {
       this.#renderNoEvent();
       return;
@@ -159,6 +179,9 @@ export default class EventListPresenter {
   #clearEventList() {
     this.#eventPresenters.forEach((presenter) => presenter.destroy());
     this.#eventPresenters.clear();
+    if (this.#loadingComponent) {
+      remove(this.#loadingComponent);
+    }
     if (this.#noEventView) {
       remove(this.#noEventView);
     }

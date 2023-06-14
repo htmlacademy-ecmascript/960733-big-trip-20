@@ -5,6 +5,10 @@ import EventsModel from './model/event-model.js';
 import FilterModel from './model/filter-model.js';
 import NewEventButtonView from './view/new-event-button-view.js';
 import {render} from './framework/render.js';
+import EventsApiService from './events-api-service.js';
+
+const AUTHORIZATION = 'Basic jsks83jkcvnpqlak9';
+const END_POINT = 'https://20.ecmascript.pages.academy/big-trip';
 
 const eventListElement = document.querySelector('.trip-events');
 const eventInfoElement = document.querySelector('.trip-main');
@@ -14,7 +18,9 @@ const eventInfoPresenter = new EventInfoPresenter(
   {container: eventInfoElement}
 );
 
-const eventsModel = new EventsModel();
+const eventsModel = new EventsModel({
+  eventsApiService: new EventsApiService(END_POINT, AUTHORIZATION)
+});
 const filterModel = new FilterModel();
 
 const filterPresenter = new FilterPresenter({
@@ -43,7 +49,9 @@ function handleNewEventButtonClick() {
   newEventButtonComponent.element.disabled = true;
 }
 
-render(newEventButtonComponent, eventInfoElement);
 eventInfoPresenter.init();
 filterPresenter.init();
 eventListPresenter.init();
+eventsModel.init().finally(() => {
+  render(newEventButtonComponent, eventInfoElement);
+});

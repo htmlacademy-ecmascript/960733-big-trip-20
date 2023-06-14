@@ -24,6 +24,7 @@ const UserAction = {
 const UpdateType = {
   MINOR: 'MINOR',
   MAJOR: 'MAJOR',
+  INIT: 'INIT'
 };
 
 const EmptyEvent = {

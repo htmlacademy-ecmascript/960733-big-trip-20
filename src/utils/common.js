@@ -1,13 +1,6 @@
 const HOUR_DURATION = 60;
 const DAY_DURATION = 24;
 
-const getRandomArrayElement = (items) => items[Math.floor(Math.random() * items.length)];
-
-const getRandomInteger = (min, max) => {
-  const rand = min - 0.5 + Math.random() * (max - min + 1);
-  return Math.round(rand);
-};
-
 const getTimeFromMins = (mins) => {
   if (mins < HOUR_DURATION) {
     return `${mins}M`;
@@ -22,4 +15,4 @@ const getTimeFromMins = (mins) => {
   return `${days}D ${hours}H ${minutes}M`;
 };
 
-export {getRandomArrayElement, getRandomInteger, getTimeFromMins};
+export {getTimeFromMins};
