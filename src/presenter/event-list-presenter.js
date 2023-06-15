@@ -8,6 +8,7 @@ import {SortType} from '../const.js';
 import {UserAction, UpdateType, FilterType, EmptyEvent} from '../const.js';
 import {filter} from '../utils/filter.js';
 import LoadingView from '../view/loading-view.js';
+import LoadingErrorView from '../view/loading-error-view.js';
 
 export default class EventListPresenter {
   #eventListView = new EventListView();
@@ -21,7 +22,9 @@ export default class EventListPresenter {
   #currentSortType = SortType.DAY;
   #filterType = FilterType.EVERYTHING;
   #loadingComponent = new LoadingView();
+  #loadingErrorComponent = new LoadingErrorView();
   #isLoading = true;
+  #isLoadingError = false;
 
   constructor({container, filterModel, eventsModel, onNewEventDestroy}) {
     this.#container = container;
@@ -78,10 +81,10 @@ export default class EventListPresenter {
     return filteredEvents;
   }
 
-  #handleViewAction = (actionType, updateType, update) => {
+  #handleViewAction = (actionType, updateType, update, errorEventUpdate) => {
     switch (actionType) {
       case UserAction.UPDATE_EVENT:
-        this.#eventsModel.updateEvent(updateType, update);
+        this.#eventsModel.updateEvent(updateType, update, errorEventUpdate);
         break;
       case UserAction.ADD_EVENT:
         this.#eventsModel.addEvent(updateType, update);
@@ -110,6 +113,7 @@ export default class EventListPresenter {
         this.#renderEvents();
         break;
       case UpdateType.INIT:
+        this.#isLoadingError = data.isError;
         this.#isLoading = false;
         remove(this.#loadingComponent);
         this.#renderEvents();
@@ -141,6 +145,10 @@ export default class EventListPresenter {
     render(this.#loadingComponent, this.#container);
   }
 
+  #renderErrorLoading() {
+    render(this.#loadingErrorComponent, this.#container);
+  }
+
   #handleSortTypeChange = (sortType) => {
     if (this.#currentSortType === sortType) {
       return;
@@ -153,6 +161,10 @@ export default class EventListPresenter {
   #renderEvents() {
     if (this.#isLoading) {
       this.#renderLoading();
+      return;
+    }
+    if (this.#isLoadingError) {
+      this.#renderErrorLoading();
       return;
     }
     if (!this.events.length) {

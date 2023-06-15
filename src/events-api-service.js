@@ -39,7 +39,7 @@ export default class EventsApiService extends ApiService {
       'date_from': event.startDate instanceof Date ? event.startDate.toISOString() : null,
       'date_to': event.endDate instanceof Date ? event.endDate.toISOString() : null,
       'is_favorite': event.isFavorite,
-      'base_price': Number(event.price),
+      'base_price': event.price
     };
 
     delete adaptedEvent.startDate;

@@ -118,7 +118,7 @@ export default class EventPresenter {
     document.addEventListener('keydown', this.#escKeyDownHandler);
   };
 
-  #itemSubmitClickHandler = (evt) => {
+  #itemSubmitClickHandler = (evt, enableSubmitButtonHandler) => {
     if (this.#newEvent) {
       this.#handleEventChange(
         UserAction.ADD_EVENT,
@@ -126,13 +126,17 @@ export default class EventPresenter {
         evt);
       this.#handleNewEventDestroy();
       this.destroy();
-      return;
+      //return;
     } else {
       this.#handleEventChange(
         UserAction.UPDATE_EVENT,
         UpdateType.MAJOR,
-        evt);
+        evt,
+        enableSubmitButtonHandler);
     }
+  };
+
+  #itemSubmitSuccess = () => {
     this.#replaceItemEditToView();
     document.removeEventListener('keydown', this.#escKeyDownHandler);
   };

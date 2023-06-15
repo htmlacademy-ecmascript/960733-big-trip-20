@@ -301,13 +301,30 @@ export default class EventEditView extends AbstractStatefulView {
   #priceChangeHandler = (evt) => {
     evt.preventDefault();
     this._setState({
-      price: evt.target.value,
+      price: Number(evt.target.value),
     });
   };
 
   #submitClickHandler = (evt) => {
     evt.preventDefault();
-    this.#onSubmitClick(EventEditView.parseStateToEvent(this._state));
+    if (!this._state.price || !this._state.destination) {
+      this.#errorEventUpdate();
+      return;
+    }
+    evt.target.disabled = true;
+    evt.target.textContent = 'Saving...';
+    this.#onSubmitClick(
+      EventEditView.parseStateToEvent(this._state),
+      this.#errorEventUpdate
+    );
+  };
+
+  #errorEventUpdate = () => {
+    const buttonElement = this.element.querySelector('.event__save-btn');
+    buttonElement.disabled = false;
+    buttonElement.textContent = 'Error';
+    buttonElement.classList.remove('btn--blue');
+    buttonElement.classList.add('btn--red');
   };
 
   #closeClickHandler = (evt) => {

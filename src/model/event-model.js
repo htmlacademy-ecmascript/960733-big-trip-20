@@ -35,15 +35,16 @@ export default class EventsModel extends Observable {
       this.#offers = await this.#eventsApiService.offers;
       const events = await this.#eventsApiService.events;
       this.#events = events.map(this.#adaptToClient);
+      this._notify(UpdateType.INIT, {isError: false});
     } catch(err) {
       this.#events = [];
       this.#destinations = [];
       this.#offers = [];
+      this._notify(UpdateType.INIT, {isError: true});
     }
-    this._notify(UpdateType.INIT);
   }
 
-  async updateEvent(updateType, update) {
+  async updateEvent(updateType, update, errorEventUpdate) {
     const index = this.#events.findIndex((task) => task.id === update.id);
 
     if (index === -1) {
@@ -60,7 +61,8 @@ export default class EventsModel extends Observable {
       ];
       this._notify(updateType, updatedEvent);
     } catch(err) {
-      throw new Error('Can\'t update task');
+      errorEventUpdate();
+      throw new Error('Can\'t update event');
     }
   }
 
