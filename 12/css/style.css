@@ -141,6 +141,9 @@ main {
   .btn--blue {
     color: #ffffff;
     background-color: #0d8ae4; }
+  .btn--red {
+    color: #ffffff;
+    background-color: #FF0000; }
   .btn:disabled {
     opacity: 0.46;
     cursor: default; }
@@ -324,6 +327,9 @@ main {
   opacity: 0.89; }
   .trip-events__msg--hidden {
     display: none; }
+
+.trip-events__msg-error {
+  color: #FF0000;}
 
 .trip-events__list {
   padding: 0;
