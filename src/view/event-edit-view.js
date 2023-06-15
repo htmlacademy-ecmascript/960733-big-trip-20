@@ -23,26 +23,27 @@ const createEventTypesTemplate = (types, selectedType) => {
 const createDestinationsTemplate = (destinations) => {
   let templateContent = '';
   for (const destination of destinations) {
-    templateContent += `<option value="${destination.title}">`;
+    templateContent += `<option value="${destination.name}">`;
   }
   return templateContent;
 };
 
 const createOffersTemplate = (availableOffers, selectedOffers) => {
   let templateContent = '';
-  if (availableOffers.length === 0) {
+  if (availableOffers.length) {
     return templateContent;
   }
   templateContent += `<section class="event__section  event__section--offers">
     <h3 class="event__section-title  event__section-title--offers">Offers</h3>
     <div class="event__available-offers">`;
 
-  for (const offer of availableOffers) {
+  for (let i = 0; i < availableOffers.offers.length; i++) {
+    const offer = availableOffers.offers[i];
     const checked = selectedOffers.includes(offer.id) ? 'checked' : '';
     templateContent += `<div class="event__offer-selector">
-      <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offer.name}-1" type="checkbox" name="event-offer-${offer.name}" data-offer-name="${offer.name}" ${checked}>
-      <label class="event__offer-label" for="event-offer-${offer.name}-1">
-        <span class="event__offer-title">${offer.description}</span>
+      <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offer.id}-1" type="checkbox" name="event-offer-${offer.id}" data-offer-id="${offer.id}" ${checked}>
+      <label class="event__offer-label" for="event-offer-${offer.id}-1">
+        <span class="event__offer-title">${offer.title}</span>
         &plus;&euro;&nbsp;
         <span class="event__offer-price">${offer.price}</span>
       </label>
@@ -57,7 +58,7 @@ const createPhotoTemplate = (photos) => {
   if (photos.length === 0) {
     return templateContent;
   }
-  templateContent += '<div><div class="event__photos-tape">';
+  templateContent += '<div class="event__photos-container"><div class="event__photos-tape">';
 
   for (const photo of photos) {
     templateContent += `<img class="event__photo" src="${photo.src}" alt="${photo.description}"></img>`;
@@ -69,15 +70,16 @@ const createPhotoTemplate = (photos) => {
 const createEventEditTemlpate = (event, types, destinations, availableOffers, newEvent) => {
   const {type, destination, offers, startDate, endDate, price} = event;
   const destinationData = destinations.find((value) => value.id === destination);
+  const availableOffersForType = availableOffers.find((value) => value.type === type);
 
   let destinationValueTemplate = '';
   let destinationDescriptionTemplate = '';
   let destinationPhotoTemplate = '';
   if (destinationData) {
-    destinationValueTemplate = `value="${destinationData.title}"`;
+    destinationValueTemplate = `value="${destinationData.name}"`;
     destinationDescriptionTemplate = `<h3 class="event__section-title  event__section-title--destination">Destination</h3>
-      <p class="event__destination-description">${destinations[destination].description}</p>`;
-    destinationPhotoTemplate = createPhotoTemplate(destinations[destination].photos);
+      <p class="event__destination-description">${destinationData.description}</p>`;
+    destinationPhotoTemplate = createPhotoTemplate(destinationData.pictures);
   }
   let rollupButtonTemplate = '';
   let startDateTemplate = '';
@@ -139,7 +141,7 @@ const createEventEditTemlpate = (event, types, destinations, availableOffers, ne
         ${rollupButtonTemplate}
       </header>
       <section class="event__details">
-        ${createOffersTemplate(availableOffers.get(type), offers)}
+        ${createOffersTemplate(availableOffersForType, offers)}
         <section class="event__section  event__section--destination">
           ${destinationDescriptionTemplate}
           ${destinationPhotoTemplate}
@@ -266,7 +268,7 @@ export default class EventEditView extends AbstractStatefulView {
 
   #destinationChangeHandler = (evt) => {
     evt.preventDefault();
-    const destinationData = this.#destinations.find((value) => value.title === he.encode(evt.target.value));
+    const destinationData = this.#destinations.find((value) => value.name === he.encode(evt.target.value));
     let destinationId = null;
     if (destinationData) {
       destinationId = destinationData.id;
@@ -280,8 +282,8 @@ export default class EventEditView extends AbstractStatefulView {
 
   #offerChangeHandler = (evt) => {
     evt.preventDefault();
-    const availableOffers = this.#availableOffers.get(this._state.type);
-    const offer = availableOffers.find((value) => value.name === evt.target.dataset.offerName);
+    const availableOffers = this.#availableOffers.find((value) => value.type === this._state.type);
+    const offer = availableOffers.offers.find((value) => value.id === evt.target.dataset.offerId);
     if (!offer) {
       return;
     }
@@ -299,13 +301,30 @@ export default class EventEditView extends AbstractStatefulView {
   #priceChangeHandler = (evt) => {
     evt.preventDefault();
     this._setState({
-      price: evt.target.value,
+      price: Number(evt.target.value),
     });
   };
 
   #submitClickHandler = (evt) => {
     evt.preventDefault();
-    this.#onSubmitClick(EventEditView.parseStateToEvent(this._state));
+    if (!this._state.price || !this._state.destination) {
+      this.#errorEventUpdate();
+      return;
+    }
+    evt.target.disabled = true;
+    evt.target.textContent = 'Saving...';
+    this.#onSubmitClick(
+      EventEditView.parseStateToEvent(this._state),
+      this.#errorEventUpdate
+    );
+  };
+
+  #errorEventUpdate = () => {
+    const buttonElement = this.element.querySelector('.event__save-btn');
+    buttonElement.disabled = false;
+    buttonElement.textContent = 'Error';
+    buttonElement.classList.remove('btn--blue');
+    buttonElement.classList.add('btn--red');
   };
 
   #closeClickHandler = (evt) => {

@@ -7,6 +7,8 @@ import {sortByDate, sortByTime, sortByPrice} from '../utils/sort.js';
 import {SortType} from '../const.js';
 import {UserAction, UpdateType, FilterType, EmptyEvent} from '../const.js';
 import {filter} from '../utils/filter.js';
+import LoadingView from '../view/loading-view.js';
+import LoadingErrorView from '../view/loading-error-view.js';
 
 export default class EventListPresenter {
   #eventListView = new EventListView();
@@ -19,6 +21,10 @@ export default class EventListPresenter {
   #newEventPresenter = null;
   #currentSortType = SortType.DAY;
   #filterType = FilterType.EVERYTHING;
+  #loadingComponent = new LoadingView();
+  #loadingErrorComponent = new LoadingErrorView();
+  #isLoading = true;
+  #isLoadingError = false;
 
   constructor({container, filterModel, eventsModel, onNewEventDestroy}) {
     this.#container = container;
@@ -38,11 +44,15 @@ export default class EventListPresenter {
   }
 
   init() {
+    this.#renderSort();
+    if (this.#isLoading) {
+      this.#renderLoading();
+      return;
+    }
     if (!this.#eventsModel.events.length) {
       this.#renderNoEvent();
       return;
     }
-    this.#renderSort();
     this.#renderEvents();
   }
 
@@ -71,10 +81,10 @@ export default class EventListPresenter {
     return filteredEvents;
   }
 
-  #handleViewAction = (actionType, updateType, update) => {
+  #handleViewAction = (actionType, updateType, update, errorEventUpdate) => {
     switch (actionType) {
       case UserAction.UPDATE_EVENT:
-        this.#eventsModel.updateEvent(updateType, update);
+        this.#eventsModel.updateEvent(updateType, update, errorEventUpdate);
         break;
       case UserAction.ADD_EVENT:
         this.#eventsModel.addEvent(updateType, update);
@@ -102,6 +112,12 @@ export default class EventListPresenter {
         this.#clearEventList();
         this.#renderEvents();
         break;
+      case UpdateType.INIT:
+        this.#isLoadingError = data.isError;
+        this.#isLoading = false;
+        remove(this.#loadingComponent);
+        this.#renderEvents();
+        break;
     }
   };
 
@@ -125,6 +141,14 @@ export default class EventListPresenter {
     render(this.#sortView, this.#container);
   }
 
+  #renderLoading() {
+    render(this.#loadingComponent, this.#container);
+  }
+
+  #renderErrorLoading() {
+    render(this.#loadingErrorComponent, this.#container);
+  }
+
   #handleSortTypeChange = (sortType) => {
     if (this.#currentSortType === sortType) {
       return;
@@ -135,6 +159,14 @@ export default class EventListPresenter {
   };
 
   #renderEvents() {
+    if (this.#isLoading) {
+      this.#renderLoading();
+      return;
+    }
+    if (this.#isLoadingError) {
+      this.#renderErrorLoading();
+      return;
+    }
     if (!this.events.length) {
       this.#renderNoEvent();
       return;
@@ -159,6 +191,9 @@ export default class EventListPresenter {
   #clearEventList() {
     this.#eventPresenters.forEach((presenter) => presenter.destroy());
     this.#eventPresenters.clear();
+    if (this.#loadingComponent) {
+      remove(this.#loadingComponent);
+    }
     if (this.#noEventView) {
       remove(this.#noEventView);
     }
