@@ -28,7 +28,6 @@
     "flatpickr": "4.6.13",
     "he": "1.2.0",
     "html-webpack-plugin": "5.5.1",
-    "nanoid": "4.0.2",
     "webpack-dev-server": "4.13.3"
   },
   "browserslist": [

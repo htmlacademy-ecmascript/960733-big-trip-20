@@ -1,5 +1,3 @@
-import {nanoid} from 'nanoid';
-
 const EVENT_TYPES = ['taxi', 'bus', 'train', 'ship', 'drive', 'flight', 'check-in', 'sightseeing', 'restaurant'];
 
 const FilterType = {
@@ -28,7 +26,6 @@ const UpdateType = {
 };
 
 const EmptyEvent = {
-  id: nanoid(),
   type: EVENT_TYPES[0],
   destination: null,
   offers: [],
