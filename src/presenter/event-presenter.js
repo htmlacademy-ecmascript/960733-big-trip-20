@@ -30,9 +30,9 @@ export default class EventPresenter {
   init({event, eventsModel, newEvent = false}) {
     this.#event = event;
     this.#eventsModel = eventsModel;
-    this.#types = [...eventsModel.types];
-    this.#destinations = [...eventsModel.destinations];
-    this.#availableOffers = eventsModel.offers;
+    this.#types = [...this.#eventsModel.types];
+    this.#destinations = [...this.#eventsModel.destinations];
+    this.#availableOffers = this.#eventsModel.offers;
     this.#newEvent = newEvent;
 
     const prevItemView = this.#itemView;
@@ -81,6 +81,32 @@ export default class EventPresenter {
     }
   }
 
+  setSaving() {
+    this.#itemEdit.updateElement({
+      isDisabled: true,
+      isSaving: true,
+    });
+  }
+
+  setDeleting() {
+    this.#itemEdit.updateElement({
+      isDisabled: true,
+      isDeleting: true,
+    });
+  }
+
+  setAborting() {
+    const resetFormState = () => {
+      this.#itemEdit.updateElement({
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false,
+      });
+    };
+
+    this.#itemEdit.shake(resetFormState);
+  }
+
   #replaceItemViewToEdit () {
     replace(this.#itemEdit, this.#itemView);
     this.#handleModeChange();
@@ -118,26 +144,18 @@ export default class EventPresenter {
     document.addEventListener('keydown', this.#escKeyDownHandler);
   };
 
-  #itemSubmitClickHandler = (evt, enableSubmitButtonHandler) => {
+  #itemSubmitClickHandler = (evt) => {
     if (this.#newEvent) {
       this.#handleEventChange(
         UserAction.ADD_EVENT,
         UpdateType.MAJOR,
         evt);
-      this.#handleNewEventDestroy();
-      this.destroy();
-      //return;
     } else {
       this.#handleEventChange(
         UserAction.UPDATE_EVENT,
         UpdateType.MAJOR,
-        evt,
-        enableSubmitButtonHandler);
+        evt);
     }
-  };
-
-  #itemSubmitSuccess = () => {
-    this.#replaceItemEditToView();
     document.removeEventListener('keydown', this.#escKeyDownHandler);
   };
 
