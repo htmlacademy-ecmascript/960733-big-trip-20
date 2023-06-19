@@ -104,7 +104,11 @@ export default class EventPresenter {
       });
     };
 
-    this.#itemEdit.shake(resetFormState);
+    if (this.#editMode || this.#newEvent) {
+      this.#itemEdit.shake(resetFormState);
+      return;
+    }
+    this.#itemView.shake(resetFormState);
   }
 
   #replaceItemViewToEdit () {
@@ -119,6 +123,9 @@ export default class EventPresenter {
   }
 
   #newEventEditView () {
+    if (this.#newEvent) {
+      document.addEventListener('keydown', this.#escKeyDownHandler);
+    }
     return new EventEditView({
       event: this.#event,
       types: this.#types,
@@ -134,7 +141,11 @@ export default class EventPresenter {
   #escKeyDownHandler = (evt) => {
     if (evt.key === 'Escape') {
       evt.preventDefault();
-      this.#replaceItemEditToView();
+      if (this.#newEvent) {
+        this.resetView();
+      } else {
+        this.#replaceItemEditToView();
+      }
       document.removeEventListener('keydown', this.#escKeyDownHandler);
     }
   };

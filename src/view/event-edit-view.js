@@ -310,8 +310,12 @@ export default class EventEditView extends AbstractStatefulView {
 
   #submitClickHandler = (evt) => {
     evt.preventDefault();
-    evt.target.disabled = true;
-    evt.target.textContent = 'Saving...';
+
+    if (!this._state.price || !this._state.destination || !this._state.startDate || !this._state.endDate) {
+      this.shake();
+      return;
+    }
+
     this.#onSubmitClick(EventEditView.parseStateToEvent(this._state));
   };
 
