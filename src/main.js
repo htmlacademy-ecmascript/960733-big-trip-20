@@ -53,5 +53,8 @@ eventInfoPresenter.init();
 filterPresenter.init();
 eventListPresenter.init();
 eventsModel.init().finally(() => {
+  if (eventsModel.isInitError) {
+    newEventButtonComponent.setDisabled();
+  }
   render(newEventButtonComponent, eventInfoElement);
 });

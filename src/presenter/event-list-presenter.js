@@ -195,11 +195,11 @@ export default class EventListPresenter {
       this.#renderErrorLoading();
       return;
     }
+    render(this.#eventListView, this.#container);
     if (!this.events.length) {
       this.#renderNoEvent();
       return;
     }
-    render(this.#eventListView, this.#container);
     this.events.forEach((event) => this.#renderEvent(event));
   }
 

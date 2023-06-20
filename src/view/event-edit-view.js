@@ -30,7 +30,7 @@ const createDestinationsTemplate = (destinations) => {
 
 const createOffersTemplate = (availableOffers, selectedOffers, isDisabled) => {
   let templateContent = '';
-  if (availableOffers.length) {
+  if (!availableOffers || !availableOffers.offers.length) {
     return templateContent;
   }
   templateContent += `<section class="event__section  event__section--offers">

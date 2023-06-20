@@ -51,6 +51,7 @@ export default class EventPresenter {
 
     if (this.#newEvent) {
       render(this.#itemEdit, this.#container, RenderPosition.AFTERBEGIN);
+      return;
     }
     if (prevItemView === null || prevItemEdit === null) {
       render(this.#itemView, this.#container);
